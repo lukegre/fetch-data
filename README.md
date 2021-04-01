@@ -34,7 +34,8 @@ Using with YAML catalogs
 ------------------------
 Use the catalog YAML entry
 ```python
-cat = df.read_catalog(cat_fname)
+import fetch_data as fd
+cat = fd.read_catalog(cat_fname)
 flist = fd.download(**cat['entry_name'])
 ```
 
