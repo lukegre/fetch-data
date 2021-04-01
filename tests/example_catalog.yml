@@ -1,0 +1,89 @@
+cci_salinity:
+  dest: ./tests/downloads/sss-smos-cci/
+  url: http://dap.ceda.ac.uk/neodc/esacci/sea_surface_salinity/data/v02.31/7days/{year}/*/ESACCI-SEASURFACESALINITY-L4-*_25km-*-fv2.31.nc
+  variables:
+    sss: salt_cci
+  meta:
+    doi: http://dx.doi.org/10.5285/4ce685bff631459fb2a30faa699f3fc5
+    citation: >
+      Boutin, J.; Vergely, J.-L.; Reul, N.; Catany, R.; Koehler, J.; Martin, A.;
+      Rouffi, F.; Arias, M.; Chakroun, M.; Corato, G.; Estella-Perez, V.;
+      Guimbard, S.; Hasson, A.; Josey, S.; Khvorostyanov, D.; Kolodziejczyk, N.;
+      Mignot, J.; Olivier, L.; Reverdin, G.; Stammer, D.; Supply, A.;
+      Thouvenin-Masson, C.; Turiel, A.; Vialard, J.; Cipollini, P.; Donlon, C.
+      (2020): ESA Sea Surface Salinity Climate Change Initiative
+      (Sea_Surface_Salinity_cci): Weekly sea surface salinity product, v2.31,
+      for 2010 to 2019. Centre for Environmental Data Analysis, date of citation.
+      https://catalogue.ceda.ac.uk/uuid/eacb7580e1b54afeaabb0fd2b0a53828
+    description: >
+      The ESA Sea Surface Salinity CCI consortium has produced global, level 4,
+      multi-sensor Sea Surface Salinity maps covering the 2010-2019 period.
+      This dataset provides Sea Surface Salinity (SSS) data at a spatial
+      resolution of 25 km and a time resolution of 1 month. This has been
+      spatially sampled on a 25 km EASE (Equal Area Scalable Earth) grid and
+      15 days of time sampling. A weekly product is also available. In addition
+      to salinity, information on errors are provided (see more in the user
+      guide and product documentation available below and on the Sea Surface
+      Salinity CCI web page).
+
+
+en421:
+  dest: ./tests/downloads/en4/
+  path_formatter: /net/kryo/work/updata/en4/EN.4.2.1/EN.4.2.1.analyses.g10.{t:%Y}.zip.unzip/EN.4.2.1.f.analysis.g10.{t:%Y%m}.nc
+  url: https://www.metoffice.gov.uk/hadobs/en4/data/en4-2-1/EN.4.2.1.analyses.g10.{year}.zip
+  variables:
+    salinity: salt_en4
+  meta:
+    doi: http://dx.doi.org/10.1002/2013JC009067
+    citation: >
+      Good, S. A., M. J. Martin and N. A. Rayner, 2013. EN4: quality controlled
+      ocean temperature and salinity profiles and monthly objective analyses
+      with uncertainty estimates, Journal of Geophysical Research: Oceans, 118,
+      6704-6716, doi:10.1002/2013JC009067
+    description: >
+      EN4.2.1, quality controlled subsurface ocean temperature and salinity
+      profiles and objective analyses
+
+
+era5_data:
+  # ERA5 data uses the CDS API to download data. The inputs are thus different
+  # from the other data entries. The destination must be the full path name
+  # (year, month and day are available as vars).
+  dest: /nfs/kryo/work/updata/ecmwf-reanalysis/era5_netcdf/hourly/{year}/ERA5_{year}_{month}.nc
+  # cds_var_names gives the names as listed on the Climate Data Store and is only
+  # used for downloading the data. `variables` is used for processing
+  cds_var_names:
+    - 10m_u_component_of_wind
+    - 10m_v_component_of_wind
+    - mean_sea_level_pressure
+  is_era5: true
+  variables:
+    u10: u10_era5
+    v10: v10_era5
+  meta:
+    doi: http://dx.doi.org/10.24381/cds.adbb2d47
+    description: >
+      Full description can be found at the following link:
+      https://cds.climate.copernicus.eu/cdsapp#!/dataset/reanalysis-era5-single-levels?tab=overview
+    citation: >
+      Hersbach, H., Bell, B., Berrisford, P., Biavati, G., Horányi, A.,
+      Muñoz Sabater, J., Nicolas, J., Peubey, C., Radu, R., Rozum, I.,
+      Schepers, D., Simmons, A., Soci, C., Dee, D., Thépaut, J-N. (2018):
+      ERA5 hourly data on single levels from 1979 to present. Copernicus
+      Climate Change Service (C3S) Climate Data Store (CDS).
+      (Accessed on < DD-MMM-YYYY >), 10.24381/cds.adbb2d47
+
+
+soda342:
+  dest: ./tests/downloads/soda342/
+  url: https://dsrs.atmos.umd.edu/DATA/soda3.4.2/REGRIDED/ocean/soda3.4.2_5dy_ocean_reg_{year}*.nc
+  variables:
+    mlp: mld_press_soda
+    salt: salt_soda
+
+
+oisst_ice:
+  dest: ./tests/downloads/oisstv2/
+  url: ftp://ftp2.psl.noaa.gov/Datasets/noaa.oisst.v2.highres/icec.day.mean.{year}.nc
+  variables:
+    icec: ice_oisst

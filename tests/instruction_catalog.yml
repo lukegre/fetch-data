@@ -1,0 +1,51 @@
+netCDF_example:
+  dest: /path_to_dataset/{year}/
+  url: ftp://server_path/data/version/resolution/{year}/*/filename-*_25km-*-fversion.nc
+  # login is for FTP and other login protocols. You can enter these here or if you have
+  # dotenv installed you can place these in the .env file and then use the $NAME_USERNAME
+  # configuration to replace the values for security. Note that this is only replaced up
+  # to two levels deep (weird bug in envyaml package)
+  login: {username: $USERNAME, password: $PASSWORD}
+  variables:
+    # variables listed here will be kept and renamed to the value.
+    original_var_name_in_netCDF: renamed_var_in_regridded_file
+  meta:
+    # will be set as attributes of the regridded netCDF files.
+    # Will also be added to a README in the download and gridding file paths
+    doi: http://dx.doi.org/random_number_DOI
+    citation: >
+      citation of paper for this dataset. I highly recommend this for later use
+      of these datasets
+    description: >
+      Will be useful for users of the data to quickly get information about the data
+
+
+era5_data:
+  # ERA5 data uses the CDS API to download data. The inputs are thus different
+  # from the other data entries. The destination must be the full path name
+  # (year, month and day are available as vars).
+  # Install the cdsapi package and then set up the config file in at ~/.cdsapirc
+  dest: /path_to_dataset_on_local_server/{year}/ERA5_{year}_{month}.nc
+  # cds_var_names gives the names as listed on the Climate Data Store and is only
+  # used for downloading the data. `variables` is used for processing
+  cds_var_names:
+    - 10m_u_component_of_wind
+    - 10m_v_component_of_wind
+    - mean_sea_level_pressure
+  is_era5: true
+  variables:
+    u10: u10_era5
+    v10: v10_era5
+  meta:
+    # note that this metadata will be true for all ERA5 data downloaded using this tool
+    doi: http://dx.doi.org/10.24381/cds.adbb2d47
+    description: >
+      Full description can be found at the following link:
+      https://cds.climate.copernicus.eu/cdsapp#!/dataset/reanalysis-era5-single-levels?tab=overview
+    citation: >
+      Hersbach, H., Bell, B., Berrisford, P., Biavati, G., Horányi, A.,
+      Muñoz Sabater, J., Nicolas, J., Peubey, C., Radu, R., Rozum, I.,
+      Schepers, D., Simmons, A., Soci, C., Dee, D., Thépaut, J-N. (2018):
+      ERA5 hourly data on single levels from 1979 to present. Copernicus
+      Climate Change Service (C3S) Climate Data Store (CDS).
+      (Accessed on < DD-MMM-YYYY >), 10.24381/cds.adbb2d47
