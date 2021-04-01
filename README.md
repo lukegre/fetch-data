@@ -21,13 +21,24 @@ Currently, this package is
 Basic usage
 -----------
 
-Use the download function directly: `fd.download(url)`. The file will be downloaded to the current directory and will be populated with a readme file, cached file list, and logging information.
+Use the download function directly:
+
+```python
+flist = fd.download(url)
+```
+
+The file will be downloaded to the current directory and will be populated with a readme file, cached file list, and logging information.
 
 
 Using with YAML catalogs
 ------------------------
-Use the catalog YAML entry: `fd.download(**cat['entry_name'])` where `cat = df.read_catalog(cat_fname)`. The catalog should be structured as shown below:
+Use the catalog YAML entry
+```python
+cat = df.read_catalog(cat_fname)
+flist = fd.download(**cat['entry_name'])
+```
 
+The catalog should be structured as shown below:
 ```yaml
 entry_name:
     url: remote path to file/s. Can contain *
