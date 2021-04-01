@@ -2,14 +2,14 @@ import os
 
 import pytest
 
-from netCDFdownloader import download as dl
-from netCDFdownloader.catalog import read_catalog
+from fetch_data import download as dl
+from fetch_data.catalog import read_catalog
 
 
 def test_file_logging():
     import logging
 
-    from netCDFdownloader import utils
+    from fetch_data import utils
 
     dest = "./tests/downloads/logging_download.log"
 
@@ -27,6 +27,7 @@ def test_read_catalog():
     cat = read_catalog(fname)
 
     assert isinstance(cat, dict)
+    assert cat != {}
 
 
 def test_get_url_list_no_login_http():
@@ -103,8 +104,11 @@ def test_download_urls():
         "/ESACCI-SEASURFACESALINITY-L4-*_25km-*-fv2.31.nc"
     )
 
-    urls = dl.get_url_list(url, use_cache=True)[:1]
-    dl.download_urls(urls, dest_path="./tests/downloads/")
+    dest = "./tests/downloads/"
+    urls = dl.get_url_list(
+        url, cache_path=f"{dest}/remote_files.cache", use_cache=True
+    )[:1]
+    dl.download_urls(urls, dest_path=dest)
 
 
 @pytest.mark.skipif(
@@ -118,14 +122,23 @@ def test_download_urls():
     ],
 )
 def test_download_urls_save_to_subfolder(method, cache):
+    import pandas as pd
+
     url = (
         "http://dap.ceda.ac.uk/neodc/esacci"
         "/sea_surface_salinity/data/v02.31/7days/2012/01"
         "/ESACCI-*_25km-2012013*-fv2.31.nc"
     )
 
-    urls = dl.get_url_list(url, use_cache=cache)
-    dl.download_urls(urls, dest_path="./tests/downloads/{t:%Y}", date_format="-%Y%m%d-")
+    urls = dl.get_url_list(
+        url, use_cache=cache, cache_path="./tests/downloads/remote_files.cache"
+    )
+
+    dl.download_urls(
+        urls,
+        dest_path="./tests/downloads/{t:%Y}",
+        date_format="-%Y%m%d-",
+    )
 
 
 def test_make_readme():
