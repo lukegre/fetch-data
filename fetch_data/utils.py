@@ -45,7 +45,7 @@ def make_readme_file(
     variables,
     manipulation,
     download_logging="None",
-    email=None,
+    contact=None,
 ):
     """
     Adheres to the UP group's (ETHZ) readme prerequisites.
@@ -73,8 +73,8 @@ def make_readme_file(
         A list of the names of the variables that are downloaded
     download_loggin: str
         The path to the download logging. Defaults to None
-    email: str
-        Defaults to USER@ethz.ch if not provided.
+    contact: str
+        Defaults to Git email and then to USER if not provided.
 
     """
     import inspect
@@ -84,9 +84,11 @@ def make_readme_file(
 
     import pandas as pd
 
-    if email is None:
-        username = pwd.getpwuid(os.getuid())[0]
-        email = f"{username}@ethz.ch"
+    if contact is None:
+        contact = get_git_username_and_email().get("email", None)
+    if contact is None:
+        contact = pwd.getpwuid(os.getuid())[0] + " (USER)"
+
     today = pd.Timestamp.today().strftime("%Y-%m-%d")
 
     w = "\n" + " " * 4
@@ -107,7 +109,7 @@ def make_readme_file(
     {dataset_name}
     {'='*len(dataset_name)}
 
-    Contact: {email}
+    Contact: {contact}
     Date:    {today}
     Source:  {doi_or_link}
     URL:     {url}
@@ -194,3 +196,15 @@ def shorten_url(s, len_limit=75):
         else:
             short += "/" + s
     return short
+
+
+def get_git_username_and_email():
+    """will try to get the user and email from the git config"""
+    import subprocess
+    import re
+
+    command = subprocess.run(["git", "config", "--list"], capture_output=True)
+    config_str = command.stdout.decode()
+
+    output = dict(re.findall("user.(name|email)=(.*)", config_str))
+    return output
