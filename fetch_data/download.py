@@ -17,13 +17,13 @@ warnings.filterwarnings("ignore", category=RuntimeWarning)
 
 def download(
     url="",
+    login={},
     dest="./",
     n_jobs=8,
-    login={},
-    use_cahce=True,
+    use_cache=True,
+    verbose=True,
     cache_name="FD_remote_files.cache",
     log_name="FD_downloads.log",
-    verbose=True,
     **kwargs,
 ):
     """
@@ -70,8 +70,9 @@ def download(
         raise TypeError("verbose must be bool or intiger")
     logging.getLogger().setLevel(logging_level)
     # Setting the logging file name and storing to kwargs for readme
-    log_fname = f"{dest}/{log_name}"
-    log_to_file(log_fname)
+    if logging_level < 40:
+        log_fname = f"{dest}/{log_name}"
+        log_to_file(log_fname)
     kwargs.update({"download_logging": log_fname})
 
     # creating the readme before downloading
@@ -421,17 +422,14 @@ def create_download_readme(name, **source_dict):
         manipulation,
     ]
 
+    # readme will always be overwritten
     readme_fname = posixpath(f"{dest}/readme.txt")
-    if readme_fname.is_file():
-        warn(f"the file {readme_fname} already exists. " "Will not be overwritten. ")
-        return
-
     readme_fname.parent.mkdir(parents=True, exist_ok=True)
 
-    email = source_dict.get("email", None)
+    contact = source_dict.get("contact", None)
     logging = source_dict.get("download_logging", "None")
 
-    readme_text = make_readme_file(*args, email=email, download_logging=logging)
+    readme_text = make_readme_file(*args, contact=contact, download_logging=logging)
 
     with open(readme_fname, "w") as file:
         file.write(readme_text)
