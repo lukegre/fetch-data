@@ -22,8 +22,9 @@ def download(
     n_jobs=8,
     use_cache=True,
     verbose=True,
-    cache_name="FD_remote_files.cache",
-    log_name="FD_downloads.log",
+    cache_name="_urls.cache",
+    log_name="_downloads.log",
+    raise_on_failed_url_fetch=True,
     **kwargs,
 ):
     """
@@ -34,6 +35,7 @@ def download(
     url: str
         a url with wildcards (*) formatter. Python string formatters that
         match kwarg entries will be replaced.
+        TODO: make list of urls possible. cache will be ignored. 
     dest: str
         where the files will be saved to. String formatting supported (as with url)
     use_cache: bool
@@ -55,6 +57,7 @@ def download(
         not used.
     """
     from collections import defaultdict
+    from .utils import get_kwargs, log_to_file, flatten_list
 
     # get all the inputs and store them as kwargs
     kwargs = {**get_kwargs(), **kwargs}
@@ -78,14 +81,19 @@ def download(
     # creating the readme before downloading
     create_download_readme(**kwargs)
 
+    # caching ignored if input is a list
+    if isinstance(url, (list, tuple)):
+        urls = url
+        url = url[0]
     # fetches a list of the files in the directory
-    urls = get_url_list(
-        url=url.format_map(kwargs),
-        raise_on_empty=False,
-        use_cache=use_cache,
-        cache_path=f"{dest}/{cache_name}",
-        **login,
-    )
+    else:
+        urls = get_url_list(
+            url=url.format_map(kwargs),
+            raise_on_empty=raise_on_failed_url_fetch,
+            use_cache=use_cache,
+            cache_path=f"{dest}/{cache_name}",
+            **login,
+        )
 
     logging.log(20, f"{len(urls): >3} files at {url.format_map(kwargs)}")
     logging.log(20, f"Files will be saved to {dest}")
@@ -95,11 +103,14 @@ def download(
 
     # determine HTTP, FTP, SFTP. Log in details are consistent of all files
     downloader = choose_downloader(url)
+    if url.lower().startswith('http') and (login != {}):
+        login = dict(args=(login['username'], login['password']))
+    downloader = downloader(progressbar=True if n_jobs == 1 else False, **login)
     flist = download_urls(
         urls,
         n_jobs=n_jobs,
         dest_path=dest,
-        downloader=downloader(progressbar=True, **login),
+        downloader=downloader,
     )
     if flist is None:
         raise ValueError("Files could not be downloaded")
@@ -114,6 +125,7 @@ def get_url_list(
     use_cache=True,
     cache_path=None,
     raise_on_empty=True,
+    **kwargs,
 ):
     """
     If a url has a wildcard (*) value, remote files will be searched for.
@@ -176,9 +188,9 @@ def get_url_list(
         path = f"{protocol}://{host}/{path}"
         try:
             flist = fs.glob(path)
-        except ClientResponseError:
+        except ClientResponseError as e:
             if raise_on_empty:
-                raise ValueError(f"No files could be found for the url: {url}")
+                raise e
             else:
                 return []
     else:
@@ -381,12 +393,12 @@ def choose_processor(url):
     chosen = None
     for processor, extensions in known_processors.items():
         for ext in extensions:
-            if ext in url:
+            if ext in url.lower():
                 chosen = processor
     return chosen
 
 
-def create_download_readme(name, **source_dict):
+def create_download_readme(**source_dict):
     """
     Creates a README file based on the information in the source dictionary.
 
@@ -413,17 +425,17 @@ def create_download_readme(name, **source_dict):
     )
 
     args = [
-        name,
-        source_dict.get("meta", {}).get("doi", None),
+        source_dict.get("name", ''),
+        source_dict.get("meta", {}).get("doi", ''),
         source_dict.get("url", None),
-        source_dict.get("meta", {}).get("citation", None),
-        source_dict.get("meta", {}).get("description", None),
+        source_dict.get("meta", {}).get("citation", ''),
+        source_dict.get("meta", {}).get("description", ''),
         source_dict.get("variables", []),
         manipulation,
     ]
 
     # readme will always be overwritten
-    readme_fname = posixpath(f"{dest}/readme.txt")
+    readme_fname = posixpath(f"{dest}/README.txt")
     readme_fname.parent.mkdir(parents=True, exist_ok=True)
 
     contact = source_dict.get("contact", None)

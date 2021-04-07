@@ -4,6 +4,25 @@ Helper functions for download
 Only core python packages used in utils.
 """
 
+def log_to_stdout(level=15):
+    import logging
+
+    rootLogger = logging.getLogger()
+
+    # remove existing file handlers
+    for handler in rootLogger.handlers:
+        if isinstance(handler, logging.StreamHandler):
+            rootLogger.handlers.remove(handler)
+
+    # add the new logger with the formatting
+    logFormatter = logging.Formatter(
+        "%(asctime)s [DOWNLOAD]  %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
+    )
+    streamHandler = logging.StreamHandler()
+    streamHandler.setFormatter(logFormatter)
+    rootLogger.addHandler(streamHandler)
+    rootLogger.setLevel(level)
+
 
 def log_to_file(fname):
     """
