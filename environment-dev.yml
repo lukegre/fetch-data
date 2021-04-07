@@ -1,0 +1,35 @@
+name: fetch-data-dev
+channels:
+  - conda-forge
+dependencies:
+  - python=3.8
+  ############## These will have to be adjusted to your specific project
+  - numpy
+  - pandas
+  - pooch
+  - fsspec
+  - numpydoc
+  - sphinx
+  - sphinx_rtd_theme
+  - ipython
+  - nbconvert
+  - nbformat
+  - ipykernel
+  - pandoc
+  ##############
+  - pytest
+  - pip
+  - pip:
+    - codecov
+    - pytest-cov
+    - coverage[toml]
+    - python-dotenv
+    - aiohttp
+    - envyaml
+    - datetime_matcher
+    - docrep<=0.2.7
+    - nbsphinx
+    - jupyter_client
+    - sphinx_pangeo_theme
+    - sphinx-copybutton
+    - sphinxcontrib-srclinks
