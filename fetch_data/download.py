@@ -1,7 +1,6 @@
 """
-Module to download files on remote servers.
-
-download is the primary interface, with all other functions supporting.
+Download
+--------
 """
 
 import logging
@@ -21,40 +20,54 @@ def download(
     dest="./",
     n_jobs=8,
     use_cache=True,
-    verbose=True,
     cache_name="_urls.cache",
+    verbose=True,
     log_name="_downloads.log",
     raise_on_failed_url_fetch=True,
     **kwargs,
 ):
-    """
-    A high level function to retrieve data from a url with a wildcard.
+    """Core function to fetch data from a url with a wildcard or as a list.
 
-    Parameters
-    ----------
-    url: str
-        a url with wildcards (*) formatter. Python string formatters that
-        match kwarg entries will be replaced.
-        TODO: make list of urls possible. cache will be ignored.
-    dest: str
-        where the files will be saved to. String formatting supported (as with url)
-    use_cache: bool
-        if set to True, will use cached url list instead of fetching a
-        new list. This is useful for updating data
-    n_jobs: int
-        the number of parallel downloads. Will not show progress bar
-        when n_jobs > 1
-    login: dict
-        required if username and passwords are required for protocol
-    name: str
-        used to keep track in logging. can set this to the data source
-    verbose: bool / int
-        if verbose is False, logging level set to ERROR (40)
-        if verbose is True, logging level set to 15
-        if verbose is intiger, then sets logging level directly.
-        See the logging module for more information.
-    **kwargs:
-        not used.
+    Allows for parallel download of data that can be set with a single url containing
+    a wild card character or a list of urls. If the wild card is used, file names
+    will be cached. A README.txt file will automatically be generated in `dest`, along
+    with a downloading log, and a url cachce (if url is a string).
+
+    ``download`` is a Frankenstein mashup of ``fsspec`` and ``pooch`` to fetch files.
+    It is tricky to download password protected files with ``fsspec`` and ``pooch``
+    does not allow for wildcard listed downloads. If the url input is only a list,
+    ``fsspec`` will not be used and only ``pooch``. But you can still download in
+    parallel with this script.
+
+    Args:
+        url (str, list): if url is a list of urls, then urls will not be fetched
+            and caching will not happen. Urls will be fetched directly. if url is a
+            string with a wildcard (*), will try to search for more files. But this
+            might not be possible with some HTTP websites. Python string formatters
+            that match kwarg entries will be replaced.
+        login (dict): required if username and passwords are required for protocol
+        dest (str): where the files will be saved to. String formatting supported
+            (as with url)
+        n_jobs (int): the number of parallel downloads. Will not show progress bar
+            when n_jobs > 1. Not allowed to be larger than 8.
+        use_cache (bool): if set to True, will use cached url list instead of
+            fetching a new list. This is useful for updating data
+        cache_name (str): the file name to which data will be cached. This file is
+            stored relative to ``dest``. The file is a simple text file showing a
+            url for each line. This will not be used if a list is passed to url.
+        verbose (bool / int): if verbose is False, logging level set to ERROR (40)
+            if verbose is True, logging level set to 15
+            if verbose is intiger, then sets logging level directly.
+            See the logging module for more information.
+        log_name (str): the file name to which logging will be saved. The file is stored
+            relative to ``dest``. Logging level can be set with the ``verbose`` arg.
+        kwargs (key=value): are keyword replacements for any values set in the
+            url (if url is no a list) and dest strings
+
+    Returns:
+        list:
+            a flattened list of file paths to where the data has been downloaded.
+            If inputs are compressed, the names of the uncompressed files will be given.
     """
     from collections import defaultdict
     from .utils import get_kwargs, log_to_file, flatten_list
@@ -226,20 +239,18 @@ def download_urls(
     Downloads the given list of urls to a specified destination path using
     the `pooch` package in Python.
     NOTE: `fsspec` is not used as it fails for some FTP and SFTP protocols.
-    Parameters
-    ----------
-    urls: list
-        the list of URLS to download - may not contain wildcards
-    dest_path: str
-        the location where the files will be downloaded to. May contain
+
+    Args:
+        urls (list): the list of URLS to download - may not contain wildcards
+        dest_path (str): the location where the files will be downloaded to. May contain
         date formatters that are labelled with "{t:%fmt} to create subfolders
-    date_format: str
-        the format of the date in the urls that will be used to fill in the
-        date formatters in `dest_path` kwarg. Matches limited to 1970s to 2020s
-    kwargs: key=value
-        will be passed to pooch.retrieve. Can be used to set the downloader
-        with username and password and the processor for unzipping. See
-        `choose_downloader` for more info.
+        date_format (str): the format of the date in the urls that will be used to
+        fill in the date formatters in `dest_path` kwarg. Matches limited to
+        1970s to 2020s
+        kwargs (key=value): will be passed to pooch.retrieve. Can be used to set
+        the downloader with username and password and the processor for unzipping.
+        See `choose_downloader` for more info.
+
     Returns
     -------
     file names of downloaded urls
@@ -348,16 +359,16 @@ def download_urls(
 
 def choose_downloader(url):
     """
-    Will automatically select the correct downloader for the given url.
-    Pass result to pooch.retrieve(downloader=downloader(**kwargs))
-    Parameters
-    ----------
-    url: str
-        the path of a url
-    Returns
-    -------
-    pooch.Downloader as a function. Resulting function Can be called with
-    (username, password, progressbar) options.
+    Will automatically select the correct downloader for the given url. Pass
+    result to pooch.retrieve(downloader=downloader())
+
+    Args:
+        url (str): the path of a url
+
+    Returns:
+        pooch.Downloader: as a function. Resulting function Can be called with
+        (username, password, progressbar) options.
+
     """
     from urllib.parse import urlparse as parse_url
     import pooch
@@ -398,7 +409,7 @@ def choose_processor(url):
     return chosen
 
 
-def create_download_readme(**source_dict):
+def create_download_readme(**entry):
     """
     Creates a README file based on the information in the source dictionary.
 
@@ -406,7 +417,7 @@ def create_download_readme(**source_dict):
     ----------
     name: str
         name to which file will be written
-    **source_dict: kwargs
+    **entry: kwargs
         must contain
     """
     import inspect
@@ -415,33 +426,19 @@ def create_download_readme(**source_dict):
 
     from .utils import make_readme_file
 
-    dest = source_dict.get("dest")
-    manipulation = inspect.cleandoc(
-        f"""
-    Data has been downloaded directly from the server shown in URL.
-    There has been no modification to the original files.
-    There may be a data cache located in the destination folder
-    """
-    )
-
-    args = [
-        source_dict.get("name", ""),
-        source_dict.get("meta", {}).get("doi", ""),
-        source_dict.get("url", None),
-        source_dict.get("meta", {}).get("citation", ""),
-        source_dict.get("meta", {}).get("description", ""),
-        source_dict.get("variables", []),
-        manipulation,
-    ]
+    dest = entry.get("dest")
 
     # readme will always be overwritten
     readme_fname = posixpath(f"{dest}/README.txt")
     readme_fname.parent.mkdir(parents=True, exist_ok=True)
 
-    contact = source_dict.get("contact", None)
-    logging = source_dict.get("download_logging", "None")
+    url = entry.get("url", None)
+    if isinstance(url, (list, tuple)):
+        url = url[0]
 
-    readme_text = make_readme_file(*args, contact=contact, download_logging=logging)
+    readme_text = make_readme_file(
+        entry.get("name", ""), url, entry.get("meta", {}), short_info_len_limit=len(url)
+    )
 
     with open(readme_fname, "w") as file:
         file.write(readme_text)

@@ -4,7 +4,7 @@ cci_salinity:
   variables:
     sss: salt_cci
   meta:
-    doi: http://dx.doi.org/10.5285/4ce685bff631459fb2a30faa699f3fc5
+    DOI: http://dx.doi.org/10.5285/4ce685bff631459fb2a30faa699f3fc5
     citation: >
       Boutin, J.; Vergely, J.-L.; Reul, N.; Catany, R.; Koehler, J.; Martin, A.;
       Rouffi, F.; Arias, M.; Chakroun, M.; Corato, G.; Estella-Perez, V.;
@@ -45,33 +45,33 @@ en421:
       profiles and objective analyses
 
 
-era5_data:
-  # ERA5 data uses the CDS API to download data. The inputs are thus different
-  # from the other data entries. The destination must be the full path name
-  # (year, month and day are available as vars).
-  dest: /nfs/kryo/work/updata/ecmwf-reanalysis/era5_netcdf/hourly/{year}/ERA5_{year}_{month}.nc
-  # cds_var_names gives the names as listed on the Climate Data Store and is only
-  # used for downloading the data. `variables` is used for processing
-  cds_var_names:
-    - 10m_u_component_of_wind
-    - 10m_v_component_of_wind
-    - mean_sea_level_pressure
-  is_era5: true
-  variables:
-    u10: u10_era5
-    v10: v10_era5
-  meta:
-    doi: http://dx.doi.org/10.24381/cds.adbb2d47
-    description: >
-      Full description can be found at the following link:
-      https://cds.climate.copernicus.eu/cdsapp#!/dataset/reanalysis-era5-single-levels?tab=overview
-    citation: >
-      Hersbach, H., Bell, B., Berrisford, P., Biavati, G., Horányi, A.,
-      Muñoz Sabater, J., Nicolas, J., Peubey, C., Radu, R., Rozum, I.,
-      Schepers, D., Simmons, A., Soci, C., Dee, D., Thépaut, J-N. (2018):
-      ERA5 hourly data on single levels from 1979 to present. Copernicus
-      Climate Change Service (C3S) Climate Data Store (CDS).
-      (Accessed on < DD-MMM-YYYY >), 10.24381/cds.adbb2d47
+# era5_data:
+#   # ERA5 data uses the CDS API to download data. The inputs are thus different
+#   # from the other data entries. The destination must be the full path name
+#   # (year, month and day are available as vars).
+#   dest: /nfs/kryo/work/updata/ecmwf-reanalysis/era5_netcdf/hourly/{year}/ERA5_{year}_{month}.nc
+#   # cds_var_names gives the names as listed on the Climate Data Store and is only
+#   # used for downloading the data. `variables` is used for processing
+#   cds_var_names:
+#     - 10m_u_component_of_wind
+#     - 10m_v_component_of_wind
+#     - mean_sea_level_pressure
+#   is_era5: true
+#   variables:
+#     u10: u10_era5
+#     v10: v10_era5
+#   meta:
+#     doi: http://dx.doi.org/10.24381/cds.adbb2d47
+#     description: >
+#       Full description can be found at the following link:
+#       https://cds.climate.copernicus.eu/cdsapp#!/dataset/reanalysis-era5-single-levels?tab=overview
+#     citation: >
+#       Hersbach, H., Bell, B., Berrisford, P., Biavati, G., Horányi, A.,
+#       Muñoz Sabater, J., Nicolas, J., Peubey, C., Radu, R., Rozum, I.,
+#       Schepers, D., Simmons, A., Soci, C., Dee, D., Thépaut, J-N. (2018):
+#       ERA5 hourly data on single levels from 1979 to present. Copernicus
+#       Climate Change Service (C3S) Climate Data Store (CDS).
+#       (Accessed on < DD-MMM-YYYY >), 10.24381/cds.adbb2d47
 
 
 soda342:

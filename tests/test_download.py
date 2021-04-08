@@ -146,5 +146,5 @@ def test_make_readme():
 
     cat = read_catalog(fname)
     for key in cat:
+        cat[key]["name"] = key.upper().replace("_", " ")
         dl.create_download_readme(**cat[key])
-        break

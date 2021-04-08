@@ -1,6 +1,7 @@
 """
-Helper functions for download
-Only core python packages used in utils.
+Utilities
+---------
+Helper functions for download. Only core python packages used in utils.
 """
 
 
@@ -58,17 +59,7 @@ def log_to_file(fname):
     logging.info("-" * 80)
 
 
-def make_readme_file(
-    dataset_name,
-    doi_or_link,
-    url,
-    citation,
-    description,
-    variables,
-    manipulation,
-    download_logging="None",
-    contact=None,
-):
+def make_readme_file(dataset_name, url, meta={}, short_info_len_limit=150):
     """
     Adheres to the UP group's (ETHZ) readme prerequisites.
 
@@ -76,85 +67,76 @@ def make_readme_file(
     ----------
     dataset_name: str
         The name of the dataset that will be at the top of the file
-    doi_or_link: str
-        The link to where the dataset can be downloaded or more info
-        can be fetched
     url: str
         The url used to download the data - may be useful for other
         downloaders. May contain wildcards and placeholders.
-    citation: str
-        Just making it easier for people to cite the dataset. If there
-        is more than one doi, please cite that too. This may be the case
-        where a dataset is published alongside a paper.
-    description: str
-        The description of the data - can be copied directly from the website
-        of the data.
-    manipulation: str
-        Any manipulation or changes you make to the data before saving.
-    variables: list
-        A list of the names of the variables that are downloaded
-    download_loggin: str
-        The path to the download logging. Defaults to None
-    contact: str
-        Defaults to Git email and then to USER if not provided.
+    meta: dict
+        A dictionary containing several
 
     """
     import inspect
     import os
     import pwd
     from textwrap import wrap
+    from datetime import datetime
 
-    import pandas as pd
+    assert isinstance(url, str)
 
+    meta["data_preparation"] = (
+        "Data has been downloaded directly from the server shown in URL. There has "
+        "been no modification to the original files. There may be a data cache "
+        "located in the destination folder.\n\n This README.txt file was "
+        "automatically created while downloading data using the "
+        "``fetch_data.download`` function. For more info see "
+        "https://github.com/lukegre/fetch-data"
+    )
+
+    s = " " * 4
+    w = "\n" + s
+
+    line_limit = short_info_len_limit
+
+    if len(dataset_name.strip()) > 2:
+        line = "=" * len(dataset_name)
+        dataset_name = dataset_name.replace("_", " ").replace("-", " ")
+        name = s + w.join([line, dataset_name, line])
+    else:
+        name = ""
+
+    # default inputs
+    contact = meta.pop("contact", None)
     if contact is None:
         contact = get_git_username_and_email().get("email", None)
     if contact is None:
         contact = pwd.getpwuid(os.getuid())[0] + " (USER)"
 
-    today = pd.Timestamp.today().strftime("%Y-%m-%d")
+    today = datetime.today().strftime("%Y-%m-%d")
 
-    w = "\n" + " " * 4
-    if variables == []:
-        variables = ""
-    elif isinstance(variables, list):
-        variables = f"{w}Variables:{w}" + f"{w}".join(["- " + v for v in variables])
-    else:
-        variables = ""
+    # custom meta inputs (short)
+    short = {k: v for k, v in meta.items() if len(k + v) <= line_limit}
+    short_pretty = w.join([f"{k: <15s} {v}" for k, v in short.items()])
 
-    citation = w.join(wrap(citation.replace("\n", " "), 80))
-    description = w.join(wrap(description.replace("\n", " "), 80))
-    manipulation = w.join(wrap(manipulation.replace("\n", " "), 80))
+    # custom met inputs (long)
+    long = {k: v for k, v in meta.items() if len(k + v) > line_limit}
+    long_pretty = []
+    for head, text in long.items():
+        text = w.join(wrap(text.replace("\n", " "), 80))
+        head = head.replace("_", " ").replace("-", " ").title()
+        long_pretty += (w + w.join([f"{head}", f"{'-' * len(head)}", f"{text}"]) + w,)
+    long_pretty = w.join(long_pretty).strip()
 
+    from ._version import __version__ as version
+
+    # MAKING THE STRING
     readme_text = inspect.cleandoc(
-        f"""
-    {'='*len(dataset_name)}
-    {dataset_name}
-    {'='*len(dataset_name)}
+        f"""{name}
+    {'Contact': <15s} {contact}
+    {'Date': <15s} {today}
+    {'URL': <15s} {url}
+    {'Script': <15s} fetch-data.download (v{version})
+    {short_pretty}
 
-    Contact: {contact}
-    Date:    {today}
-    Source:  {doi_or_link}
-    URL:     {url}
-    Logging: {download_logging}
-
-
-    ------------
-    Dataset info
-    ------------
-    {citation}
-
-    {description}
-    {variables}
-
-    ------------------
-    Dataset processing
-    ------------------
-    {manipulation}
-
-
-
-    readme file was automatically created using netCDFdownloader tool
-    https://github.com/lukegre/netCDF-Downloader
+    {long_pretty}
 
     """
     )
