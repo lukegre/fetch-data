@@ -35,7 +35,7 @@ def download(
     url: str
         a url with wildcards (*) formatter. Python string formatters that
         match kwarg entries will be replaced.
-        TODO: make list of urls possible. cache will be ignored. 
+        TODO: make list of urls possible. cache will be ignored.
     dest: str
         where the files will be saved to. String formatting supported (as with url)
     use_cache: bool
@@ -103,8 +103,8 @@ def download(
 
     # determine HTTP, FTP, SFTP. Log in details are consistent of all files
     downloader = choose_downloader(url)
-    if url.lower().startswith('http') and (login != {}):
-        login = dict(args=(login['username'], login['password']))
+    if url.lower().startswith("http") and (login != {}):
+        login = dict(args=(login["username"], login["password"]))
     downloader = downloader(progressbar=True if n_jobs == 1 else False, **login)
     flist = download_urls(
         urls,
@@ -425,11 +425,11 @@ def create_download_readme(**source_dict):
     )
 
     args = [
-        source_dict.get("name", ''),
-        source_dict.get("meta", {}).get("doi", ''),
+        source_dict.get("name", ""),
+        source_dict.get("meta", {}).get("doi", ""),
         source_dict.get("url", None),
-        source_dict.get("meta", {}).get("citation", ''),
-        source_dict.get("meta", {}).get("description", ''),
+        source_dict.get("meta", {}).get("citation", ""),
+        source_dict.get("meta", {}).get("description", ""),
         source_dict.get("variables", []),
         manipulation,
     ]
