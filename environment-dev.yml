@@ -16,12 +16,14 @@ dependencies:
   - nbformat
   - ipykernel
   - pandoc
+  - joblib
   ##############
   - pytest
   - pip
   - pip:
     - codecov
     - pytest-cov
+    - pre-commit
     - coverage[toml]
     - python-dotenv
     - aiohttp
