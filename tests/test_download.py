@@ -2,8 +2,7 @@ import os
 
 import pytest
 
-from fetch_data import download as dl
-from fetch_data.catalog import read_catalog
+import fetch_data as fd
 
 
 def test_file_logging():
@@ -24,7 +23,7 @@ def test_file_logging():
 def test_read_catalog():
     fname = "./tests/example_catalog.yml"
 
-    cat = read_catalog(fname)
+    cat = fd.read_catalog(fname)
 
     assert isinstance(cat, dict)
     assert cat != {}
@@ -37,7 +36,7 @@ def test_get_url_list_no_login_http():
         "/ESACCI-SEASURFACESALINITY-L4-*_25km-*-fv2.31.nc"  # wildcards
     )
 
-    flist = dl.get_url_list(url, use_cache=False)
+    flist = fd.download.get_url_list(url, use_cache=False)
 
     assert len(flist) != 0
 
@@ -57,9 +56,9 @@ def test_get_url_list_bad_url(method, raise_err):
 
     if raise_err:
         with pytest.raises(ValueError):
-            dl.get_url_list(url, use_cache=False, raise_on_empty=raise_err)
+            fd.download.get_url_list(url, use_cache=False, raise_on_empty=raise_err)
     elif not raise_err:
-        dl.get_url_list(url, use_cache=False, raise_on_empty=raise_err)
+        fd.download.get_url_list(url, use_cache=False, raise_on_empty=raise_err)
 
 
 def test_get_url_list_bad_filename_raise():
@@ -70,7 +69,7 @@ def test_get_url_list_bad_filename_raise():
     )
 
     with pytest.raises(ValueError):
-        dl.get_url_list(url, use_cache=False, raise_on_empty=True)
+        fd.download.get_url_list(url, use_cache=False, raise_on_empty=True)
 
 
 def test_get_url_list_fake_kwarg_https():
@@ -81,7 +80,9 @@ def test_get_url_list_fake_kwarg_https():
     )
 
     with pytest.raises(TypeError):
-        dl.get_url_list(url, use_cache=False, username="tester", password="fakes")
+        fd.download.get_url_list(
+            url, use_cache=False, username="tester", password="fakes"
+        )
 
 
 def test_choose_downloader():
@@ -89,7 +90,7 @@ def test_choose_downloader():
 
     url = "ftp://thispartdoesntmatter.com"
 
-    protocol = dl.choose_downloader(url)
+    protocol = fd.download.choose_downloader(url)
 
     assert protocol == pooch.downloaders.FTPDownloader
 
@@ -105,10 +106,10 @@ def test_download_urls():
     )
 
     dest = "./tests/downloads/"
-    urls = dl.get_url_list(
+    urls = fd.download.get_url_list(
         url, cache_path=f"{dest}/remote_files.cache", use_cache=True
     )[:1]
-    dl.download_urls(urls, dest_path=dest)
+    fd.download.download_urls(urls, dest_path=dest)
 
 
 @pytest.mark.skipif(
@@ -130,11 +131,11 @@ def test_download_urls_save_to_subfolder(method, cache):
         "/ESACCI-*_25km-2012013*-fv2.31.nc"
     )
 
-    urls = dl.get_url_list(
+    urls = fd.download.get_url_list(
         url, use_cache=cache, cache_path="./tests/downloads/remote_files.cache"
     )
 
-    dl.download_urls(
+    fd.download.download_urls(
         urls,
         dest_path="./tests/downloads/{t:%Y}",
         date_format="-%Y%m%d-",
@@ -144,7 +145,7 @@ def test_download_urls_save_to_subfolder(method, cache):
 def test_make_readme():
     fname = "./tests/example_catalog.yml"
 
-    cat = read_catalog(fname)
+    cat = fd.read_catalog(fname)
     for key in cat:
         cat[key]["name"] = key.upper().replace("_", " ")
-        dl.create_download_readme(**cat[key])
+        fd.download.create_download_readme(**cat[key])

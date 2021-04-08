@@ -14,7 +14,7 @@ import pooch
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 
 
-def download(
+def fetch(
     url="",
     login={},
     dest="./",
