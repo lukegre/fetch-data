@@ -14,6 +14,12 @@ import os
 import pathlib
 import sys
 
+# The version info for the project you're documenting, acts as replacement for
+# |version| and |release|, also used in various other places throughout the
+# built documents.
+# see https://pypi.org/project/setuptools-scm/ for details
+from pkg_resources import get_distribution
+
 
 print("python exec:", sys.executable)
 print("sys.path:", sys.path)
@@ -29,14 +35,9 @@ project = "fetch-data"
 copyright = "2021, Luke Gregor"
 author = "Luke Gregor"
 
-# The version info for the project you're documenting, acts as replacement for
-# |version| and |release|, also used in various other places throughout the
-# built documents.
-# see https://pypi.org/project/setuptools-scm/ for details
-from pkg_resources import get_distribution
-release = get_distribution('fetch_data').version
+release = get_distribution("fetch_data").version
 # for example take major/minor
-version = '.'.join(release.split('.')[:2])
+version = ".".join(release.split(".")[:2])
 
 # -- General configuration ---------------------------------------------------
 
@@ -74,7 +75,7 @@ exclude_patterns = ["_build", "**.ipynb_checkpoints", "Thumbs.db", ".DS_Store"]
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = "pangeo"
+html_theme = "sphinx_rtd_theme"
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -85,3 +86,6 @@ html_static_path = ["_static"]
 # -- nbsphinx specific options ----------------------------------------------
 # this allows notebooks to be run even if they produce errors.
 nbsphinx_allow_errors = True
+
+
+autodoc_member_order = "bysource"

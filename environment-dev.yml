@@ -25,6 +25,7 @@ dependencies:
     - pytest-cov
     - pre-commit
     - coverage[toml]
+    - recommonmark
     - python-dotenv
     - aiohttp
     - envyaml
