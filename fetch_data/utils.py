@@ -1,10 +1,13 @@
 """
 Helper functions for download
-
 Only core python packages used in utils.
 """
 
+
 def log_to_stdout(level=15):
+    """
+    Adds the stdout to the logging stream and sets the level to 15 by default
+    """
     import logging
 
     rootLogger = logging.getLogger()
