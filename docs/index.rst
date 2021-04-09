@@ -3,21 +3,36 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to fetch-data's documentation!
-=======================================
+Welcome to fetch-data
+=====================
 
-This is an awesome description of fetch-data, written in `reStructuredText`_.
+Fetch data is a simple tool to quickly download data from various sources.
+It is a package I've developed for my own needs, so I haven't written too
+many tests. The :code:`fetch-data` relies on two established packages,
+:code:`pooch` and :code:`fsspec`. I have combined these to make the
+downloading process quick and easy.
 
-You can contribute new sections by either adding a new file (see ``new_section.rst``) or just putting a jupyter notebook
-in the ``docs`` folder (see ``new_section_notebook.ipynb``).
+Installation
+------------
 
-In either case, make sure to add an entry in the ``.. toctree::``. Check out ``index.rst`` how it was done for the above examples.
+.. code-block:: bash
+
+   pip install fetch-data
+
+
+Contents
+--------
 
 .. toctree::
    :maxdepth: 2
+   :caption: Usage examples
 
-   new_section
-   new_section_notebook
+   usage
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Auto API
+
    api
 
 

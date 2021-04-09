@@ -1,6 +1,3 @@
-:mod: Auto generated API
-
-
 
 .. automodule:: fetch_data.catalog
     :members:
@@ -8,7 +5,7 @@
     :show-inheritance:
 
 
-.. automodule:: fetch_data.download
+.. automodule:: fetch_data.core
     :members:
     :undoc-members:
     :show-inheritance:

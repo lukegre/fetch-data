@@ -1,0 +1,50 @@
+Usage
+=====
+
+One can use :code:`fetch_data` to download data by setting up a data catalog (:code:`yaml` file)
+or you can pass the arguments straight to the function.
+
+Downloading files
+-----------------
+Below we first show the simple interactive approach, and then using a :code:`fetch_data` file.
+
+.. code-block:: python
+
+    import fetch_data as fd
+
+    url = ("http://dap.ceda.ac.uk/neodc/esacci/sea_surface_salinity/data/"
+           "v02.31/7days/2012/01/ESACCI-SEASURFACESALINITY-L4-*_25km-*-fv2.31.nc")
+
+    flist = fd.download(url, dest='~/Downloads')
+
+The url can also be a list/tuple of urls.
+
+.. code-block:: python
+
+    import fetch_data as fd
+
+    urls = (
+        "https://www.metoffice.gov.uk/hadobs/en4/data/en4-2-1/EN.4.2.1.analyses.g10.2000.zip",
+        "https://www.metoffice.gov.uk/hadobs/en4/data/en4-2-1/EN.4.2.1.analyses.g10.2001.zip",
+    )
+
+    flist = fd.download(urls, dest='~/Downloads')
+
+Notice that in the example above, that there are :code:`*` characters that represent
+wild cards (can match with anything). This is useful when you want to download
+multiple files to one folder.
+
+The next example shows how one would do this using a catalog file, where the
+approach is the same:
+
+
+.. code-block:: python
+
+    import fetch_data as fd
+
+    cat = fd.read_catalog('../path/to/catalog_file.yaml')
+    flist = fd.download(**cat['entry_name'])
+
+The advantage of using a catalog, is that all the information that you need to
+download the file is stored in a single file. This approach is better for
+a data pipeline approach.
