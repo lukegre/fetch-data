@@ -133,7 +133,7 @@ def make_readme_file(dataset_name, url, meta={}, short_info_len_limit=150):
     {'Contact': <15s} {contact}
     {'Date': <15s} {today}
     {'URL': <15s} {url}
-    {'Script': <15s} fetch-data.download (v{version})
+    {'Script': <15s} https://github.com/lukegre/fetch-data (v{version})
     {short_pretty}
 
     {long_pretty}

@@ -429,7 +429,7 @@ def create_download_readme(**entry):
 
     # readme will always be overwritten
     readme_fname = posixpath(f"{dest}/README.txt")
-    print(readme_fname)
+
     readme_fname.parent.mkdir(parents=True, exist_ok=True)
 
     url = entry.get("url", None)
