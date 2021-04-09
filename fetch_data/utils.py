@@ -140,7 +140,7 @@ def make_readme_file(dataset_name, url, meta={}, short_info_len_limit=150):
 
     """
     )
-
+    meta.pop("data_preparation")
     return readme_text
 
 
