@@ -74,11 +74,12 @@ def download(
     from .utils import get_kwargs, log_to_file, flatten_list
     from pathlib import Path as path
 
-    # get all the inputs and store them as kwargs
-    kwargs = {**get_kwargs(), **kwargs}
     # if any placeholders in dest, then fill them out
     dest = dest.format_map(kwargs)
     dest = str(path(dest).expanduser())
+
+    # get all the inputs and store them as kwargs
+    kwargs = {**get_kwargs(), **kwargs}
 
     # set logging level to 15 if verbose, else 40
     if isinstance(verbose, bool):
@@ -428,6 +429,7 @@ def create_download_readme(**entry):
 
     # readme will always be overwritten
     readme_fname = posixpath(f"{dest}/README.txt")
+    print(readme_fname)
     readme_fname.parent.mkdir(parents=True, exist_ok=True)
 
     url = entry.get("url", None)
