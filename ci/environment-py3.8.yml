@@ -15,3 +15,5 @@ dependencies:
     - coverage[toml]
     - python-dotenv
     - envyaml
+    - requests
+    - aiohttp

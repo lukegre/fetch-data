@@ -12,3 +12,5 @@ dependencies:
   - pip:
     - python-dotenv
     - envyaml
+    - requests
+    - aiohttp

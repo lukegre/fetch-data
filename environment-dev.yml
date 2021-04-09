@@ -21,6 +21,8 @@ dependencies:
   - pip
   - pip:
     - codecov
+    - requests
+    - aiohttp
     - pytest-cov
     - pre-commit
     - coverage[toml]
