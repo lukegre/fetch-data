@@ -18,12 +18,14 @@ def download(
     url="",
     login={},
     dest="./",
-    n_jobs=8,
+    n_jobs=1,
     use_cache=True,
-    cache_name="_urls.cache",
-    verbose=True,
+    cache_name="_urls_{hash}.cache",
+    verbose=False,
     log_name="_downloads.log",
     raise_on_failed_url_fetch=True,
+    decompress=True,
+    create_readme=True,
     **kwargs,
 ):
     """Core function to fetch data from a url with a wildcard or as a list.
@@ -41,10 +43,9 @@ def download(
 
     Args:
         url (str, list): if url is a list of urls, then urls will not be fetched
-            and caching will not happen. Urls will be fetched directly. if url is a
-            string with a wildcard (*), will try to search for more files. But this
-            might not be possible with some HTTP websites. Python string formatters
-            that match kwarg entries will be replaced.
+            and caching will not happen. Urls will be fetched directly.
+            If url is a string with a wildcard (*), will try to search for more
+            files. But this might not be possible with some HTTP websites.
         login (dict): required if username and passwords are required for protocol
         dest (str): where the files will be saved to. String formatting supported
             (as with url)
@@ -71,11 +72,13 @@ def download(
     """
     from collections import defaultdict
     from .utils import get_kwargs, log_to_file, flatten_list
+    from pathlib import Path as path
 
     # get all the inputs and store them as kwargs
     kwargs = {**get_kwargs(), **kwargs}
     # if any placeholders in dest, then fill them out
     dest = dest.format_map(kwargs)
+    dest = str(path(dest).expanduser())
 
     # set logging level to 15 if verbose, else 40
     if isinstance(verbose, bool):
@@ -86,20 +89,21 @@ def download(
         raise TypeError("verbose must be bool or intiger")
     logging.getLogger().setLevel(logging_level)
     # Setting the logging file name and storing to kwargs for readme
+    log_fname = f"{dest}/{log_name}"
     if logging_level < 40:
-        log_fname = f"{dest}/{log_name}"
         log_to_file(log_fname)
-    kwargs.update({"download_logging": log_fname})
+        kwargs.update({"download_logging": log_fname})
 
     # creating the readme before downloading
-    create_download_readme(**kwargs)
+    if create_readme:
+        create_download_readme(**kwargs)
 
     # caching ignored if input is a list
     if isinstance(url, (list, tuple)):
         urls = url
         url = url[0]
     # fetches a list of the files in the directory
-    else:
+    elif "*" in url:
         urls = get_url_list(
             url=url.format_map(kwargs),
             raise_on_empty=raise_on_failed_url_fetch,
@@ -107,23 +111,21 @@ def download(
             cache_path=f"{dest}/{cache_name}",
             **login,
         )
+    else:
+        # will simply use url as is
+        urls = [url.format_map(kwargs)]
 
     logging.log(20, f"{len(urls): >3} files at {url.format_map(kwargs)}")
-    logging.log(20, f"Files will be saved to {dest}")
-
     if len(urls) == 0:
         return []
+    logging.log(20, f"Files will be saved to {dest}")
 
-    # determine HTTP, FTP, SFTP. Log in details are consistent of all files
-    downloader = choose_downloader(url)
-    if url.lower().startswith("http") and (login != {}):
-        login = dict(args=(login["username"], login["password"]))
-    downloader = downloader(progressbar=True if n_jobs == 1 else False, **login)
     flist = download_urls(
         urls,
         n_jobs=n_jobs,
-        dest_path=dest,
-        downloader=downloader,
+        dest_dir=dest,
+        login=login,
+        decompress=decompress,
     )
     if flist is None:
         raise ValueError("Files could not be downloaded")
@@ -136,25 +138,28 @@ def get_url_list(
     username=None,
     password=None,
     use_cache=True,
-    cache_path=None,
+    cache_path="./_urls_{hash}.cache",
     raise_on_empty=True,
     **kwargs,
 ):
-    """
-    If a url has a wildcard (*) value, remote files will be searched for.
+    """If a url has a wildcard (*) value, remote files will be searched.
+
     Leverages off the `fsspec` package. This doesn't work for all HTTP urls.
 
     Parameters
     ----------
+    url: str
+        If a url has a wildcard (*) value, remote files will be searched for.
     username: str
         if required for given url and protocol (e.g. FTP)
     password: str
         if required for given url and protocol (e.g. FTP)
     cache_path: str
-        the path where the cached files will be stored
+        the path where the cached files will be stored. Has a special case
+        where `{hash}` will be replaced with a hash based on the URL.
     use_cache: bool
-        if there is a file with cached remote urls, then those
-        values will be returned as a list
+        if there is a file with cached remote urls, then those values will be
+        returned as a list
     raise_on_empty: bool
         if there are no files, raise an error or silently pass
 
@@ -164,12 +169,15 @@ def get_url_list(
     """
     from pathlib import Path as posixpath
     from urllib.parse import urlparse
+    from .utils import make_hash_string
 
-    from aiohttp import ClientResponseError
-    from pandas import Series, read_csv
+    if "*" not in url:
+        return [url]
+
+    if "{hash}" in cache_path:
+        cache_path = cache_path.format(hash=make_hash_string(url))
 
     if use_cache:
-        assert isinstance(cache_path, str), "cache_path must be a string"
         cache_path = posixpath(cache_path)
         if cache_path.is_file():
             with open(cache_path, "r") as file:
@@ -177,8 +185,6 @@ def get_url_list(
             logging.log(
                 15, f"Fetched {len(flist)} files from flist cache: {cache_path}"
             )
-            logging.debug(flist)
-
             return sorted(flist)
 
     purl = urlparse(url)
@@ -201,9 +207,9 @@ def get_url_list(
         path = f"{protocol}://{host}/{path}"
         try:
             flist = fs.glob(path)
-        except ClientResponseError as e:
+        except Exception as e:
             if raise_on_empty:
-                raise e
+                raise ValueError(f"URLs could not be fetched from {url}")
             else:
                 return []
     else:
@@ -231,8 +237,9 @@ def download_urls(
     urls,
     downloader=None,
     n_jobs=8,
-    dest_path="./{t:%Y}/{t:%m}",
-    date_format="%Y%m%d",
+    dest_dir=".",
+    login={},
+    decompress=True,
     **kwargs,
 ):
     """
@@ -242,10 +249,10 @@ def download_urls(
 
     Args:
         urls (list): the list of URLS to download - may not contain wildcards
-        dest_path (str): the location where the files will be downloaded to. May contain
+        dest_dir (str): the location where the files will be downloaded to. May contain
         date formatters that are labelled with "{t:%fmt} to create subfolders
         date_format (str): the format of the date in the urls that will be used to
-        fill in the date formatters in `dest_path` kwarg. Matches limited to
+        fill in the date formatters in `dest_dir` kwarg. Matches limited to
         1970s to 2020s
         kwargs (key=value): will be passed to pooch.retrieve. Can be used to set
         the downloader with username and password and the processor for unzipping.
@@ -302,34 +309,19 @@ def download_urls(
         finally:
             return 1, url
 
-    import pandas as pd
-    from datetime_matcher import DatetimeMatcher
     from pooch import Unzip
 
-    re_date = DatetimeMatcher()
-    # format will limit between 1970s and 2020s (with exceptions)
-    re_date.format_code_to_regex_map["Y"] = "[12][90][789012][0-9]"
-
+    progressbar = (1 // n_jobs) & (logging.getLogger().level <= 20)
     download_args = []
     for url in urls:
-        if "{t:" in dest_path:
-            date = re_date.extract_datetime(date_format, url)
-            if date is not None:
-                date = pd.to_datetime(date, format=date_format)
-                fpath = dest_path.format(t=date)
-            else:
-                raise ValueError("No date found in the dest_path")
-        else:
-            fpath = dest_path
-
         download_args += (
             dict(
                 url=url,
                 known_hash=None,
                 fname=url.split("/")[-1],
-                path=fpath,
-                processor=choose_processor(url),
-                downloader=downloader,
+                path=dest_dir,
+                processor=choose_processor(url) if decompress else None,
+                downloader=choose_downloader(url, login=login, progress=progressbar),
                 **kwargs,
             ),
         )
@@ -357,7 +349,7 @@ def download_urls(
     return passed
 
 
-def choose_downloader(url):
+def choose_downloader(url, login={}, progress=True):
     """
     Will automatically select the correct downloader for the given url. Pass
     result to pooch.retrieve(downloader=downloader())
@@ -375,8 +367,8 @@ def choose_downloader(url):
 
     known_downloaders = {
         "ftp": pooch.FTPDownloader,
-        "https": pooch.HTTPDownloader,
         "http": pooch.HTTPDownloader,
+        "https": pooch.HTTPDownloader,
     }
 
     parsed_url = parse_url(url)
@@ -386,6 +378,12 @@ def choose_downloader(url):
             f"Must be one of {known_downloaders.keys()}."
         )
     downloader = known_downloaders[parsed_url.scheme]
+
+    # if http, then use different password implementation
+    if url.lower().startswith("http") and (login != {}):
+        login = dict(args=(login["username"], login["password"]))
+    # calling the function to prepare
+    downloader = downloader(progressbar=progress, **login)
 
     return downloader
 

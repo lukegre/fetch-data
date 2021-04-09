@@ -144,6 +144,29 @@ def make_readme_file(dataset_name, url, meta={}, short_info_len_limit=150):
     return readme_text
 
 
+def make_hash_string(string, output_length=10):
+    """Create a hash for given string
+
+    Truncates an md5 hash to the desired length.
+    Will always be safe for file names.
+
+    Args:
+        string (str): input string
+        output_length (int): length for output
+
+    Returns:
+        str: n character string that is unique to the input string
+    """
+    import base64
+    import hashlib
+
+    urlb = (string).encode()
+    hasher = hashlib.md5(urlb).digest()
+    hashed = base64.b16encode(hasher).decode()[:output_length]
+
+    return hashed
+
+
 def flatten_list(list_of_lists):
     """Will recursively flatten a nested list"""
     if len(list_of_lists) == 0:

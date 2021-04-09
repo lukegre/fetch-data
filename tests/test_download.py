@@ -52,7 +52,7 @@ def test_get_url_list_no_login_http():
     ],
 )
 def test_get_url_list_bad_url(method, raise_err):
-    url = "http://fake_url.com/test_file.nc"  # wildcards
+    url = "http://fake_url.com/test_*_file.nc"  # wildcards
 
     if raise_err:
         with pytest.raises(ValueError):
@@ -65,7 +65,7 @@ def test_get_url_list_bad_filename_raise():
     url = (
         "http://dap.ceda.ac.uk/neodc/esacci"
         "/sea_surface_salinity/data/v02.31/7days/2012/01"
-        "/bad_file_name.nc"  # wildcards
+        "/bad_file_*_name.nc"  # wildcards
     )
 
     with pytest.raises(ValueError):
@@ -79,7 +79,7 @@ def test_get_url_list_fake_kwarg_https():
         "/ESACCI-SEASURFACESALINITY-L4-*_25km-*-fv2.31.nc"  # wildcards
     )
 
-    with pytest.raises(TypeError):
+    with pytest.raises(ValueError):
         fd.core.get_url_list(url, use_cache=False, username="tester", password="fakes")
 
 
@@ -88,9 +88,9 @@ def test_choose_downloader():
 
     url = "ftp://thispartdoesntmatter.com"
 
-    protocol = fd.core.choose_downloader(url)
+    protocol = fd.core.choose_downloader(url, progress=False)
 
-    assert protocol == pooch.downloaders.FTPDownloader
+    assert protocol.__class__ == pooch.downloaders.FTPDownloader().__class__
 
 
 @pytest.mark.skipif(
@@ -108,36 +108,6 @@ def test_download_urls():
         url, cache_path=f"{dest}/remote_files.cache", use_cache=True
     )[:1]
     fd.core.download_urls(urls, dest_path=dest)
-
-
-@pytest.mark.skipif(
-    os.environ.get("CI", "false") == "true", reason="Skipping downloads in CI"
-)
-@pytest.mark.parametrize(
-    "method,cache",
-    [
-        ("use_cache", False),
-        ("use_cache", True),
-    ],
-)
-def test_download_urls_save_to_subfolder(method, cache):
-    import pandas as pd
-
-    url = (
-        "http://dap.ceda.ac.uk/neodc/esacci"
-        "/sea_surface_salinity/data/v02.31/7days/2012/01"
-        "/ESACCI-*_25km-2012013*-fv2.31.nc"
-    )
-
-    urls = fd.core.get_url_list(
-        url, use_cache=cache, cache_path="./tests/downloads/remote_files.cache"
-    )
-
-    fd.core.download_urls(
-        urls,
-        dest_path="./tests/downloads/{t:%Y}",
-        date_format="-%Y%m%d-",
-    )
 
 
 def test_make_readme():
