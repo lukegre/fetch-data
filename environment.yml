@@ -6,12 +6,9 @@ dependencies:
   - pytest
   # Examples (remove and add as needed)
   - numpy
-  - pandas
   - pooch
   - joblib
   - fsspec
   - pip:
     - python-dotenv
-    - aiohttp
     - envyaml
-    - datetime_matcher

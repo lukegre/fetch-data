@@ -5,7 +5,6 @@ dependencies:
   - python=3.8
   ############## These will have to be adjusted to your specific project
   - numpy
-  - pandas
   - pooch
   - fsspec
   - numpydoc
@@ -27,9 +26,7 @@ dependencies:
     - coverage[toml]
     - recommonmark
     - python-dotenv
-    - aiohttp
     - envyaml
-    - datetime_matcher
     - docrep<=0.2.7
     - nbsphinx
     - jupyter_client
