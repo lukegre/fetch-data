@@ -24,6 +24,7 @@ dependencies:
     - requests
     - chardet==3.0.4
     - aiohttp
+    - fssepc
     - pytest-cov
     - pre-commit
     - coverage[toml]
