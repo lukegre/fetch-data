@@ -279,8 +279,8 @@ def download_urls(
         try:
             logging.log(15, f"retrieving {url}")
             return 0, pooch.retrieve(**kwargs)
-        except:
-            pass
+        except KeyboardInterrupt as e:
+            raise (e)
 
         try:
             # this is for when the server does not allow the file size to be fetched
@@ -313,7 +313,6 @@ def download_urls(
                 path=dest_dir,
                 processor=choose_processor(url) if decompress else None,
                 downloader=choose_downloader(url, login=login, progress=progressbar),
-                **kwargs,
             ),
         )
 
@@ -413,7 +412,7 @@ def create_download_readme(**entry):
     from pathlib import Path as posixpath
     from warnings import warn
 
-    from .utils import make_readme_file
+    from .utils import make_readme_file, commong_substring
 
     dest = entry.get("dest")
 
@@ -424,7 +423,7 @@ def create_download_readme(**entry):
 
     url = entry.get("url", None)
     if isinstance(url, (list, tuple)):
-        url = url[0]
+        url = commong_substring(url) + "..."
 
     readme_text = make_readme_file(
         entry.get("name", ""), url, entry.get("meta", {}), short_info_len_limit=len(url)

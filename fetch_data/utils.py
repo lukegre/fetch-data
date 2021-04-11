@@ -235,3 +235,32 @@ def get_git_username_and_email():
 
     output = dict(re.findall("user.(name|email)=(.*)", config_str))
     return output
+
+
+def commong_substring(input_list):
+    """Finds the common substring in a list of strings"""
+
+    def longest_substring_finder(string1, string2):
+        """Finds the common substring between two strings"""
+        answer = ""
+        len1, len2 = len(string1), len(string2)
+        for i in range(len1):
+            match = ""
+            for j in range(len2):
+                if i + j < len1 and string1[i + j] == string2[j]:
+                    match += string2[j]
+                else:
+                    if len(match) > len(answer):
+                        answer = match
+                    match = ""
+        return answer
+
+    if len(input_list) == 2:
+        return longest_substring_finder(*input_list)
+
+    if len(input_list) > 2:
+        item0 = input_list[0]
+        for i in range(len(input_list) - 1):
+            item1 = input_list[i + 1]
+            item0 = commong_substring([item0, item1])
+        return commong_substring([item0, item1])

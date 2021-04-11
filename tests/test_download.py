@@ -97,7 +97,7 @@ def test_download_urls():
     urls = fd.core.get_url_list(
         url, cache_path=f"{dest}/remote_files.cache", use_cache=True
     )[:1]
-    fd.core.download_urls(urls, dest_path=dest)
+    fd.core.download_urls(urls, dest_dir=dest)
 
 
 def test_make_readme():
