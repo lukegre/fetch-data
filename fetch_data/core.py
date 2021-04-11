@@ -23,45 +23,48 @@ def download(
     cache_name="_urls_{hash}.cache",
     verbose=False,
     log_name="_downloads.log",
-    raise_on_failed_url_fetch=True,
     decompress=True,
     create_readme=True,
     **kwargs,
 ):
     """Core function to fetch data from a url with a wildcard or as a list.
 
-    Allows for parallel download of data that can be set with a single url containing
-    a wild card character or a list of urls. If the wild card is used, file names
-    will be cached. A README.txt file will automatically be generated in `dest`, along
-    with a downloading log, and a url cachce (if url is a string).
+    Allows for parallel download of data that can be set with a single url
+    containing a wild card character or a list of urls. If the wild card is
+    used, file names will be cached. A README.txt file will automatically be
+    generated in `dest`, along with a downloading log, and a url cachce (if url
+    is a string).
 
-    ``download`` is a Frankenstein mashup of ``fsspec`` and ``pooch`` to fetch files.
-    It is tricky to download password protected files with ``fsspec`` and ``pooch``
-    does not allow for wildcard listed downloads. If the url input is only a list,
-    ``fsspec`` will not be used and only ``pooch``. But you can still download in
-    parallel with this script.
+    :code:`download` is a Frankenstein mashup of :code:`fsspec` and
+    :code:`pooch` to fetch files. It is tricky to download password protected
+    files with :code:`fsspec` and :code:`pooch` does not allow for wildcard
+    listed downloads. If the url input is only a list, :code:`fsspec` will not
+    be used and only :code:`pooch`. But you can still download in parallel with
+    this script.
 
     Args:
-        url (str, list): if url is a list of urls, then urls will not be fetched
-            and caching will not happen. Urls will be fetched directly.
-            If url is a string with a wildcard (*), will try to search for more
-            files. But this might not be possible with some HTTP websites.
-        login (dict): required if username and passwords are required for protocol
-        dest (str): where the files will be saved to. String formatting supported
-            (as with url)
-        n_jobs (int): the number of parallel downloads. Will not show progress bar
-            when n_jobs > 1. Not allowed to be larger than 8.
+        url (str, list): URL/s to be downloaded.
+            If URL is a string and contains a wildcard (*), will try to search
+            for files on the server. But this might not be possible with some
+            HTTP websites. Caching will be used in this case. Will fail if
+            no files could be fetched from the server.
+        login (dict): required if :code:`username` and :code:`passwords` are
+            required for protocol
+        dest (str): where the files will be saved to. String formatting
+            supported (as with url)
+        n_jobs (int): the number of parallel downloads. Will not show progress
+            bar when n_jobs > 1. Not allowed to be larger than 8.
         use_cache (bool): if set to True, will use cached url list instead of
             fetching a new list. This is useful for updating data
-        cache_name (str): the file name to which data will be cached. This file is
-            stored relative to ``dest``. The file is a simple text file showing a
-            url for each line. This will not be used if a list is passed to url.
+        cache_name (str): the file name to which data will be cached. This file
+            is stored relative to :code:`dest`. The file is a simple text file showing
+            a url for each line. This will not be used if a list is passed to url.
         verbose (bool / int): if verbose is False, logging level set to ERROR (40)
             if verbose is True, logging level set to 15
             if verbose is intiger, then sets logging level directly.
             See the logging module for more information.
         log_name (str): the file name to which logging will be saved. The file is stored
-            relative to ``dest``. Logging level can be set with the ``verbose`` arg.
+            relative to :code:`dest`. Logging level can be set with the :code:`verbose` arg.
         kwargs (key=value): are keyword replacements for any values set in the
             url (if url is no a list) and dest strings
 
@@ -107,10 +110,9 @@ def download(
     elif "*" in url:
         urls = get_url_list(
             url=url.format_map(kwargs),
-            raise_on_empty=raise_on_failed_url_fetch,
             use_cache=use_cache,
             cache_path=f"{dest}/{cache_name}",
-            **login,
+            **login,  # will not pass anything if empty
         )
     else:
         # will simply use url as is
@@ -140,33 +142,25 @@ def get_url_list(
     password=None,
     use_cache=True,
     cache_path="./_urls_{hash}.cache",
-    raise_on_empty=True,
     **kwargs,
 ):
     """If a url has a wildcard (*) value, remote files will be searched.
 
     Leverages off the `fsspec` package. This doesn't work for all HTTP urls.
 
-    Parameters
-    ----------
-    url: str
-        If a url has a wildcard (*) value, remote files will be searched for.
-    username: str
-        if required for given url and protocol (e.g. FTP)
-    password: str
-        if required for given url and protocol (e.g. FTP)
-    cache_path: str
-        the path where the cached files will be stored. Has a special case
-        where `{hash}` will be replaced with a hash based on the URL.
-    use_cache: bool
-        if there is a file with cached remote urls, then those values will be
-        returned as a list
-    raise_on_empty: bool
-        if there are no files, raise an error or silently pass
+    Parameters:
+        url (str): If a url has a wildcard (*) value, remote files will be
+            searched for
+        username (str): if required for given url and protocol (e.g. FTP)
+        password (str): if required for given url and protocol (e.g. FTP)
+        cache_path (str): the path where the cached files will be stored. Has a
+            special case where `{hash}` will be replaced with a hash based on
+            the URL.
+        use_cache (bool): if there is a file with cached remote urls, then
+            those values will be returned as a list
 
-    Returns
-    -------
-    a sorted list of urls
+    Returns:
+        list: a sorted list of urls
     """
     from pathlib import Path as posixpath
     from urllib.parse import urlparse
@@ -206,21 +200,18 @@ def get_url_list(
     fs = fsspec.filesystem(**props)
     if protocol.startswith("http"):
         path = f"{protocol}://{host}/{path}"
-        try:
-            flist = fs.glob(path)
-        except Exception as e:
-            if raise_on_empty:
-                raise ValueError(f"URLs could not be fetched from {url}")
-            else:
-                return []
-    else:
-        flist = [f"{protocol}://{host}{f}" for f in fs.glob(path)]
 
-    no_files = len(flist) == 0
-    if no_files and raise_on_empty:
-        raise ValueError(f"No files could be found for the url: {url}")
-    if no_files and not use_cache:
-        return flist
+    try:
+        flist = fs.glob(path)
+    except AttributeError:
+        raise FileNotFoundError(f"The given url does not exist: {url}")
+    except TypeError:
+        raise KeyError(
+            f"The host {protocol}://{host} does not accept username/password"
+        )
+
+    if not protocol.startswith("https"):
+        flist = [f"{protocol}://{host}{f}" for f in fs.glob(path)]
 
     # writing url list to cache file
     if use_cache:
@@ -259,9 +250,8 @@ def download_urls(
         the downloader with username and password and the processor for unzipping.
         See `choose_downloader` for more info.
 
-    Returns
-    -------
-    file names of downloaded urls
+    Returns:
+        list: file names of downloaded urls
     """
 
     def pooch_retrieve_handling(kwargs):

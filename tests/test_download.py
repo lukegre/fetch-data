@@ -44,21 +44,11 @@ def test_get_url_list_no_login_http():
 @pytest.mark.skipif(
     os.environ.get("CI", "false") == "true", reason="Skipping downloads in CI"
 )
-@pytest.mark.parametrize(
-    "method,raise_err",
-    [
-        ("raise_on_empty", True),
-        ("raise_on_empty", False),
-    ],
-)
-def test_get_url_list_bad_url(method, raise_err):
+def test_get_url_list_bad_url():
     url = "http://fake_url.com/test_*_file.nc"  # wildcards
 
-    if raise_err:
-        with pytest.raises(ValueError):
-            fd.core.get_url_list(url, use_cache=False, raise_on_empty=raise_err)
-    elif not raise_err:
-        fd.core.get_url_list(url, use_cache=False, raise_on_empty=raise_err)
+    with pytest.raises(FileNotFoundError):
+        fd.core.get_url_list(url, use_cache=False)
 
 
 def test_get_url_list_bad_filename_raise():
@@ -68,8 +58,8 @@ def test_get_url_list_bad_filename_raise():
         "/bad_file_*_name.nc"  # wildcards
     )
 
-    with pytest.raises(ValueError):
-        fd.core.get_url_list(url, use_cache=False, raise_on_empty=True)
+    flist = fd.core.get_url_list(url, use_cache=False)
+    assert flist == []
 
 
 def test_get_url_list_fake_kwarg_https():
@@ -79,7 +69,7 @@ def test_get_url_list_fake_kwarg_https():
         "/ESACCI-SEASURFACESALINITY-L4-*_25km-*-fv2.31.nc"  # wildcards
     )
 
-    with pytest.raises(ValueError):
+    with pytest.raises(KeyError):
         fd.core.get_url_list(url, use_cache=False, username="tester", password="fakes")
 
 
