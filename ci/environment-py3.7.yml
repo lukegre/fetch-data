@@ -17,4 +17,4 @@ dependencies:
     - envyaml
     - requests
     - aiohttp
-    - fssepc
+    - fsspec

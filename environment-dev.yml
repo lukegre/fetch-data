@@ -6,7 +6,6 @@ dependencies:
   ############## These will have to be adjusted to your specific project
   - numpy
   - pooch
-  - fsspec
   - numpydoc
   - sphinx
   - sphinx_rtd_theme
@@ -24,7 +23,7 @@ dependencies:
     - requests
     - chardet==3.0.4
     - aiohttp
-    - fssepc
+    - fsspec
     - pytest-cov
     - pre-commit
     - coverage[toml]
