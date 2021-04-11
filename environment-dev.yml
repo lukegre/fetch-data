@@ -22,6 +22,7 @@ dependencies:
   - pip:
     - codecov
     - requests
+    - chardet==3.0.4
     - aiohttp
     - pytest-cov
     - pre-commit

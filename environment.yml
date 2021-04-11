@@ -13,4 +13,5 @@ dependencies:
     - python-dotenv
     - envyaml
     - requests
+    - chardet==3.0.4
     - aiohttp
