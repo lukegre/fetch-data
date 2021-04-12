@@ -264,3 +264,6 @@ def commong_substring(input_list):
             item1 = input_list[i + 1]
             item0 = commong_substring([item0, item1])
         return commong_substring([item0, item1])
+
+    if len(input_list) == 1:
+        return input_list[0]
