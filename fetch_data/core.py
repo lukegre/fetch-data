@@ -371,7 +371,7 @@ def choose_downloader(url, login={}, progress=True):
 
     # if http, then use different password implementation
     if url.lower().startswith("http") and (login != {}):
-        login = dict(args=(login["username"], login["password"]))
+        login = dict(auth=(login["username"], login["password"]))
     # calling the function to prepare
     downloader = downloader(progressbar=progress, **login)
 
