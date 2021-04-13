@@ -434,7 +434,10 @@ def create_download_readme(**entry):
         url = commong_substring(url) + "..."
 
     readme_text = make_readme_file(
-        entry.get("name", ""), url, entry.get("meta", {}), short_info_len_limit=len(url)
+        entry.get("name", ""),
+        url,
+        entry.get("meta", {}),
+        short_info_len_limit=max([120, len(url)]),
     )
 
     with open(readme_fname, "w") as file:
