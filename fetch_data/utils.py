@@ -20,7 +20,7 @@ def log_to_stdout(level=15):
 
     # add the new logger with the formatting
     logFormatter = logging.Formatter(
-        "%(asctime)s [DOWNLOAD]  %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
+        "%(asctime)s [fetch_data]  %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
     )
     streamHandler = logging.StreamHandler()
     streamHandler.setFormatter(logFormatter)
@@ -48,15 +48,14 @@ def log_to_file(fname):
 
     # add the new logger with the formatting
     logFormatter = logging.Formatter(
-        "%(asctime)s [DOWNLOAD]  %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
+        "%(asctime)s [fetch_data]  %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
     )
     fileHandler = logging.FileHandler(fname)
     fileHandler.setFormatter(logFormatter)
     rootLogger.addHandler(fileHandler)
 
-    logging.info("=" * 80 + "\n" * 2)
+    logging.info("=" * 80)
     logging.info("Start of logging session")
-    logging.info("-" * 80)
 
 
 def make_readme_file(dataset_name, url, meta={}, short_info_len_limit=150):

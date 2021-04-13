@@ -106,4 +106,4 @@ def test_make_readme():
     cat = fd.read_catalog(fname)
     for key in cat:
         cat[key]["name"] = key.upper().replace("_", " ")
-        fd.core.create_download_readme(**cat[key])
+        fd.core.create_download_readme("README.txt", **cat[key])

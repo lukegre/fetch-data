@@ -25,6 +25,7 @@ def download(
     log_name="_downloads.log",
     decompress=True,
     create_readme=True,
+    readme_fname="README.md",
     **kwargs,
 ):
     """Core function to fetch data from a url with a wildcard or as a list.
@@ -100,7 +101,7 @@ def download(
 
     # creating the readme before downloading
     if create_readme:
-        create_download_readme(**kwargs)
+        create_download_readme(readme_fname, **kwargs)
 
     # caching ignored if input is a list
     if isinstance(url, (list, tuple)):
@@ -405,7 +406,7 @@ def choose_processor(url):
     return chosen
 
 
-def create_download_readme(**entry):
+def create_download_readme(fname, **entry):
     """
     Creates a README file based on the information in the source dictionary.
 
@@ -425,7 +426,7 @@ def create_download_readme(**entry):
     dest = entry.get("dest")
 
     # readme will always be overwritten
-    readme_fname = posixpath(f"{dest}/README.txt")
+    readme_fname = posixpath(f"{dest}/{fname}")
 
     readme_fname.parent.mkdir(parents=True, exist_ok=True)
 
