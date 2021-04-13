@@ -108,7 +108,7 @@ def make_readme_file(dataset_name, url, meta={}, short_info_len_limit=150):
     if contact is None:
         contact = get_git_username_and_email().get("email", None)
     if contact is None:
-        contact = pwd.getpwuid(os.getuid())[0] + " (USER)"
+        contact = pwd.getpwuid(os.getuid())[0]
 
     today = datetime.today().strftime("%Y-%m-%d")
 
@@ -125,7 +125,10 @@ def make_readme_file(dataset_name, url, meta={}, short_info_len_limit=150):
         long_pretty += (w + w.join([f"{head}", f"{'-' * len(head)}", f"{text}"]) + w,)
     long_pretty = w.join(long_pretty).strip()
 
-    from ._version import __version__ as version
+    try:
+        from ._version import __version__ as version
+    except ModuleNotFoundError:
+        version = "no version found"
 
     # MAKING THE STRING
     readme_text = inspect.cleandoc(
@@ -133,7 +136,7 @@ def make_readme_file(dataset_name, url, meta={}, short_info_len_limit=150):
     {'Contact': <15s} {contact}
     {'Date': <15s} {today}
     {'URL': <15s} {url}
-    {'Script': <15s} https://github.com/lukegre/fetch-data (v{version})
+    {'Script': <15s} https://github.com/lukegre/fetch-data ({version})
     {short_pretty}
 
     {long_pretty}

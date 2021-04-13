@@ -74,7 +74,7 @@ def download(
             If inputs are compressed, the names of the uncompressed files will be given.
     """
     from collections import defaultdict
-    from .utils import get_kwargs, log_to_file, flatten_list
+    from .utils import get_kwargs, log_to_file, flatten_list, commong_substring
     from pathlib import Path as path
 
     # if any placeholders in dest, then fill them out
@@ -104,8 +104,7 @@ def download(
 
     # caching ignored if input is a list
     if isinstance(url, (list, tuple)):
-        urls = url
-        url = url[0]
+        urls = [u.format_map(kwargs) for u in url]
     # fetches a list of the files in the directory
     elif "*" in url:
         urls = get_url_list(
@@ -118,7 +117,9 @@ def download(
         # will simply use url as is
         urls = [url.format_map(kwargs)]
 
-    logging.log(20, f"{len(urls): >3} files at {url.format_map(kwargs)}")
+    logging.log(
+        20, f"{len(urls): >3} files at {commong_substring(urls).format_map(kwargs)}"
+    )
     if len(urls) == 0:
         return []
     logging.log(20, f"Files will be saved to {dest}")
@@ -346,10 +347,12 @@ def choose_downloader(url, login={}, progress=True):
 
     Args:
         url (str): the path of a url
-
+        login (dict): can contain either `username` and `password` OR `cookies`
+            which are passed to the relevant downloader in pooch.
+        progress (bool): a progressbar will be shown if True - requires tqdm
     Returns:
-        pooch.Downloader: as a function. Resulting function Can be called with
-        (username, password, progressbar) options.
+        pooch.Downloader: with the items in login passed to the downloader
+            as kwargs and progressbar set to True (if set)
 
     """
     from urllib.parse import urlparse as parse_url
@@ -371,7 +374,12 @@ def choose_downloader(url, login={}, progress=True):
 
     # if http, then use different password implementation
     if url.lower().startswith("http") and (login != {}):
-        login = dict(auth=(login["username"], login["password"]))
+        if "cookies" in login:
+            login = dict(cookies=login["cookies"])
+        elif "username" in login and "password" in login:
+            login = dict(auth=(login["username"], login["password"]))
+        else:
+            raise KeyError("`login` can only contain (username, password) OR cookies")
     # calling the function to prepare
     downloader = downloader(progressbar=progress, **login)
 
