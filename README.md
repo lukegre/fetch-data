@@ -5,7 +5,7 @@ fetch-data
 [![codecov](https://codecov.io/gh/lukegre/fetch-data/branch/main/graph/badge.svg)](https://codecov.io/gh/lukegre/fetch-data)
 [![pypi](https://img.shields.io/pypi/v/fetch-data.svg)](https://pypi.org/project/fetch-data)
 [![License:MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=flt-square)](https://opensource.org/licenses/MIT)
-[![DOI](https://zenodo.org/badge/353780080.svg)](https://zenodo.org/badge/latestdoi/353780080)
+[![DOI](https://zenodo.org/badge/353780080.svg)](https://doi.org/10.5281/zenodo.4679568)
 <!-- [![conda-forge](https://img.shields.io/conda/dn/conda-forge/fetch-data?label=conda-forge)](https://anaconda.org/conda-forge/fetch-data) -->
 
 
