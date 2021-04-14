@@ -25,7 +25,7 @@ def download(
     log_name="_downloads.log",
     decompress=True,
     create_readme=True,
-    readme_fname="README.md",
+    readme_name="README.md",
     **kwargs,
 ):
     """Core function to fetch data from a url with a wildcard or as a list.
@@ -66,6 +66,8 @@ def download(
             See the logging module for more information.
         log_name (str): the file name to which logging will be saved. The file is stored
             relative to :code:`dest`. Logging level can be set with the :code:`verbose` arg.
+        create_readme (bool): will create a readme in the destination folder
+        readme_name (str): default readme file name. can change the path relative to dest
         kwargs (key=value): are keyword replacements for any values set in the
             url (if url is no a list) and dest strings
 
@@ -101,7 +103,7 @@ def download(
 
     # creating the readme before downloading
     if create_readme:
-        create_download_readme(readme_fname, **kwargs)
+        create_download_readme(readme_name, **kwargs)
 
     # caching ignored if input is a list
     if isinstance(url, (list, tuple)):
