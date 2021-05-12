@@ -4,13 +4,13 @@ Download
 """
 
 import logging
-import tempfile
 import warnings
 
 import fsspec
 import pooch
 
 
+logger = logging.getLogger("fetch_data")
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 
 
@@ -94,7 +94,7 @@ def download(
         logging_level = verbose
     else:
         raise TypeError("verbose must be bool or intiger")
-    logging.getLogger().setLevel(logging_level)
+    logging.getLogger("fetch_data").setLevel(logging_level)
     # Setting the logging file name and storing to kwargs for readme
     log_fname = f"{dest}/{log_name}"
     if logging_level < 40:
@@ -120,12 +120,12 @@ def download(
         # will simply use url as is
         urls = [url.format_map(kwargs)]
 
-    logging.log(
+    logger.log(
         20, f"{len(urls): >3} files at {commong_substring(urls).format_map(kwargs)}"
     )
     if len(urls) == 0:
         return []
-    logging.log(20, f"Files will be saved to {dest}")
+    logger.log(20, f"Files will be saved to {dest}")
 
     flist = download_urls(
         urls,
@@ -181,9 +181,7 @@ def get_url_list(
         if cache_path.is_file():
             with open(cache_path, "r") as file:
                 flist = file.read().split("\n")
-            logging.log(
-                15, f"Fetched {len(flist)} files from flist cache: {cache_path}"
-            )
+            logger.log(15, f"Fetched {len(flist)} files from flist cache: {cache_path}")
             return sorted(flist)
 
     purl = urlparse(url)
@@ -191,7 +189,7 @@ def get_url_list(
     host = purl.netloc
     path = purl.path
 
-    logging.log(15, f"Fetching filenames from {url}")
+    logger.log(15, f"Fetching filenames from {url}")
 
     props = {"protocol": protocol}
     if not protocol.startswith("http"):
@@ -223,7 +221,7 @@ def get_url_list(
         with open(cache_path, "w") as out_file:
             out_file.write("\n".join(flist))
 
-    logging.log(15, f"Cached {len(flist)} urls to: {cache_path}")
+    logger.log(15, f"Cached {len(flist)} urls to: {cache_path}")
     logging.debug(flist)
 
     return sorted(flist)
@@ -281,7 +279,7 @@ def download_urls(
         url = kwargs.get("url")
 
         try:
-            logging.log(15, f"retrieving {url}")
+            logger.log(15, f"retrieving {url}")
             return 0, pooch.retrieve(**kwargs)
         except KeyboardInterrupt as e:
             raise (e)
@@ -299,14 +297,14 @@ def download_urls(
         except Exception as e:
             if "550" in str(e):
                 message = f"ERROR: Check file permissions: {url}. "
-                logging.log(20, message)
+                logger.log(20, message)
             return 1, url
         finally:
             return 1, url
 
     from pooch import Unzip
 
-    progressbar = (1 // n_jobs) & (logging.getLogger().level <= 20)
+    progressbar = (1 // n_jobs) & (logging.getLogger("fetch_data").level <= 20)
     download_args = []
     for url in urls:
         download_args += (

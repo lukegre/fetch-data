@@ -11,21 +11,21 @@ def log_to_stdout(level=15):
     """
     import logging
 
-    rootLogger = logging.getLogger()
+    logger = logging.getLogger("fetch_data")
 
     # remove existing file handlers
-    for handler in rootLogger.handlers:
+    for handler in logger.handlers:
         if isinstance(handler, logging.StreamHandler):
-            rootLogger.handlers.remove(handler)
+            logger.handlers.remove(handler)
 
     # add the new logger with the formatting
     logFormatter = logging.Formatter(
-        "%(asctime)s [fetch_data]  %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
+        "%(asctime)s [%(name)s]  %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
     )
     streamHandler = logging.StreamHandler()
     streamHandler.setFormatter(logFormatter)
-    rootLogger.addHandler(streamHandler)
-    rootLogger.setLevel(level)
+    logger.addHandler(streamHandler)
+    logger.setLevel(level)
 
 
 def log_to_file(fname):
@@ -39,20 +39,20 @@ def log_to_file(fname):
     fname = posixpath(fname)
     fname.parent.mkdir(exist_ok=True, parents=True)
 
-    rootLogger = logging.getLogger()
+    logger = logging.getLogger("fetch_data")
 
     # remove existing file handlers
-    for handler in rootLogger.handlers:
+    for handler in logger.handlers:
         if isinstance(handler, logging.FileHandler):
-            rootLogger.handlers.remove(handler)
+            logger.handlers.remove(handler)
 
     # add the new logger with the formatting
     logFormatter = logging.Formatter(
-        "%(asctime)s [fetch_data]  %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
+        "%(asctime)s [%(name)s]  %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
     )
     fileHandler = logging.FileHandler(fname)
     fileHandler.setFormatter(logFormatter)
-    rootLogger.addHandler(fileHandler)
+    logger.addHandler(fileHandler)
 
     logging.info("=" * 80)
     logging.info("Start of logging session")
