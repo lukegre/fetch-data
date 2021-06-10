@@ -222,7 +222,7 @@ def get_url_list(
             out_file.write("\n".join(flist))
 
     logger.log(15, f"Cached {len(flist)} urls to: {cache_path}")
-    logging.debug(flist)
+    logger.debug(flist)
 
     return sorted(flist)
 
@@ -333,7 +333,7 @@ def download_urls(
 
     failed = [f for o, f in flist if o > 0]
     passed = [f for o, f in flist if o == 0]
-    logging.info(
+    logger.info(
         f"SUMMARY: Retrieved={len(passed)}, Failed={len(failed)} listing failed below: \n"
         + "\n".join(failed)
     )
