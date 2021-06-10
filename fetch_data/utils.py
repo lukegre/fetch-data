@@ -26,6 +26,7 @@ def log_to_stdout(level=15):
     streamHandler.setFormatter(logFormatter)
     logger.addHandler(streamHandler)
     logger.setLevel(level)
+    return logger
 
 
 def log_to_file(fname):
@@ -40,7 +41,6 @@ def log_to_file(fname):
     fname.parent.mkdir(exist_ok=True, parents=True)
 
     logger = logging.getLogger("fetch_data")
-
     # remove existing file handlers
     for handler in logger.handlers:
         if isinstance(handler, logging.FileHandler):
@@ -54,8 +54,8 @@ def log_to_file(fname):
     fileHandler.setFormatter(logFormatter)
     logger.addHandler(fileHandler)
 
-    logging.info("=" * 80)
-    logging.info("Start of logging session")
+    logger.info("=" * 80)
+    logger.info("Start of logging session")
 
 
 def make_readme_file(dataset_name, url, meta={}, short_info_len_limit=150):
