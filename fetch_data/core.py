@@ -295,8 +295,13 @@ def download_urls(
         try:
             pooch.retrieve(**kwargs)
         except Exception as e:
+            # catches errors and returns useful information to the logger
             if "550" in str(e):
                 message = f"ERROR: Check file permissions: {url}. "
+                logger.log(20, message)
+            return 1, url
+            if "404" in str(e):
+                message = f"ERROR: URL not found: {url}. "
                 logger.log(20, message)
             return 1, url
         finally:
