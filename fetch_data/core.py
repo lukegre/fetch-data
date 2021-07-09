@@ -275,6 +275,8 @@ def download_urls(
         str:
             retrieved filename, if failed returns the URL
         """
+        from requests import HTTPError
+        
         pooch.get_logger().setLevel(1000)
         url = kwargs.get("url")
 
@@ -283,6 +285,10 @@ def download_urls(
             return 0, pooch.retrieve(**kwargs)
         except KeyboardInterrupt as e:
             raise (e)
+        except HTTPError as e:
+            message = f"ERROR: URL not found: {url}. "
+            logger.log(20, message)
+            return 1, url
 
         try:
             # this is for when the server does not allow the file size to be fetched
@@ -298,10 +304,6 @@ def download_urls(
             # catches errors and returns useful information to the logger
             if "550" in str(e):
                 message = f"ERROR: Check file permissions: {url}. "
-                logger.log(20, message)
-            return 1, url
-            if "404" in str(e):
-                message = f"ERROR: URL not found: {url}. "
                 logger.log(20, message)
             return 1, url
         finally:
