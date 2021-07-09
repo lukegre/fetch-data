@@ -280,9 +280,10 @@ def download_urls(
         pooch.get_logger().setLevel(1000)
         url = kwargs.get("url")
 
-        try:
+        try:  # catch errors 
             logger.log(15, f"retrieving {url}")
-            return 0, pooch.retrieve(**kwargs)
+            fname = pooch.retrieve(**kwargs)
+            return 0, fname
         except KeyboardInterrupt as e:
             raise (e)
         except HTTPError as e:
